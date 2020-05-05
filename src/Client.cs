@@ -165,8 +165,7 @@ namespace ClassicUO
 
             Log.Trace("Loading plugins...");
 
-            foreach (var p in Settings.GlobalSettings.Plugins)
-                Plugin.Create(p);
+            Plugin.Create(@"./Assistant/Razor.exe");
             Log.Trace("Done!");
 
             UoAssist.Start();

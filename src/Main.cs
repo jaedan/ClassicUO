@@ -410,10 +410,6 @@ namespace ClassicUO
                         CUOEnviroment.SkipLoginScreen = true;
                         break;
 
-                    case "plugins":
-                        Settings.GlobalSettings.Plugins = string.IsNullOrEmpty(value) ? new string[0] : value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-                        break;
-
                     case "use_verdata":
                         Settings.GlobalSettings.UseVerdata = bool.Parse(value);
                         break;

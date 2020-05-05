@@ -106,7 +106,7 @@ namespace ClassicUO.Configuration
         public byte Encryption { get; set; }
 
         [JsonProperty("plugins")]
-        public string[] Plugins { get; set; } = { @"./Assistant/Razor.dll" };
+        public string[] Plugins { get; set; } = { @"./Assistant/Razor.exe" };
 
 
         public const string SETTINGS_FILENAME = "settings.json";
