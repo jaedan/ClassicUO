@@ -539,7 +539,7 @@ namespace ClassicUO.Game.UI.Gumps
                     break;
 
                 case Buttons.PeaceWarToggle:
-                    GameActions.ChangeWarMode();
+                    GameActions.ToggleWarMode();
 
                     break;
 

@@ -98,7 +98,7 @@ namespace ClassicUO.Game.Scenes
             set => ScalePos = (int) (value * 10) - 5;
         }
 
-        public HotkeysManager Hotkeys { get; private set; }
+        public KeyBindManager KeyBinds { get; private set; }
 
         public MacroManager Macros { get; private set; }
 
@@ -123,7 +123,7 @@ namespace ClassicUO.Game.Scenes
             base.Load();
 
             ItemHold.Clear();
-            Hotkeys = new HotkeysManager();
+            KeyBinds = new KeyBindManager();
             Macros = new MacroManager();
 
             // #########################################################
@@ -141,6 +141,7 @@ namespace ClassicUO.Game.Scenes
             // #########################################################
 
             Macros.Load();
+            KeyBinds.Load();
 
             InfoBars = new InfoBarManager();
             InfoBars.Load();
@@ -292,6 +293,7 @@ namespace ClassicUO.Game.Scenes
             UIManager.GetGump<WorldMapGump>()?.SaveSettings();
 
             ProfileManager.Current?.Save(UIManager.Gumps.OfType<Gump>().Where(s => s.CanBeSaved).Reverse().ToList());
+            KeyBinds.Save();
             Macros.Save();
             InfoBars.Save();
             ProfileManager.UnLoadProfile();
@@ -313,7 +315,7 @@ namespace ClassicUO.Game.Scenes
 
             _useItemQueue?.Clear();
             _useItemQueue = null;
-            Hotkeys = null;
+            KeyBinds = null;
             Macros = null;
             MessageManager.MessageReceived -= ChatOnMessageReceived;
 
@@ -563,12 +565,12 @@ namespace ClassicUO.Game.Scenes
             Pathfinder.ProcessAutoWalk();
             DelayedObjectClickManager.Update();
 
-            if (!MoveCharacterByMouseInput() && !ProfileManager.Current.DisableArrowBtn)
+            if (!MoveCharacterByMouseInput())
             {
-                Direction dir = DirectionHelper.DirectionFromKeyboardArrows(_flags[0],
-                                                                            _flags[2],
-                                                                            _flags[1],
-                                                                            _flags[3]);
+                Direction dir = DirectionHelper.DirectionFromKeyboardArrows(_requestedMovementDirections[0],
+                                                                            _requestedMovementDirections[1],
+                                                                            _requestedMovementDirections[2],
+                                                                            _requestedMovementDirections[3]);
 
                 if (World.InGame && !Pathfinder.AutoWalking && dir != Direction.NONE)
                 {

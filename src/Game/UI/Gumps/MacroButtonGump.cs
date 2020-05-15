@@ -122,9 +122,7 @@ namespace ClassicUO.Game.UI.Gumps
             if (_macro != null)
             {
                 GameScene gs = Client.Game.GetScene<GameScene>();
-                gs.Macros.SetMacroToExecute(_macro.FirstNode);
-                gs.Macros.WaitForTargetTimer = 0;
-                gs.Macros.Update();
+                gs.Macros.Execute(_macro.FirstNode);
             }
         }
 

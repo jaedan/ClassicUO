@@ -46,7 +46,7 @@ namespace ClassicUO.Game.Scenes
         private bool _followingMode;
         private uint _followingTarget;
         private bool _isSelectionActive;
-        private readonly bool[] _flags = new bool[5];
+        private readonly bool[] _requestedMovementDirections = new bool[4]; // Up, Down, Left, Right
         private bool _requestedWarMode;
         private bool _rightMousePressed, _continueRunning;
         private (int, int) _selectionStart, _selectionEnd;
@@ -340,7 +340,7 @@ namespace ClassicUO.Game.Scenes
                 return false;
             }
 
-            if (!ProfileManager.Current.DisableAutoMove && _rightMousePressed)
+            if (_rightMousePressed)
                 _continueRunning = true;
 
             if (_dragginObject != null)
@@ -731,46 +731,49 @@ namespace ClassicUO.Game.Scenes
 
             return true;
         }
+
+        internal void OnMovement(Direction dir, bool keyDown)
+        {
+            switch (dir & Direction.Mask)
+            {
+                case Direction.Up:
+                    _requestedMovementDirections[0] = keyDown;
+                    break;
+                case Direction.Down:
+                    _requestedMovementDirections[1] = keyDown;
+                    break;
+                case Direction.Left:
+                    _requestedMovementDirections[2] = keyDown;
+                    break;
+                case Direction.Right:
+                    _requestedMovementDirections[3] = keyDown;
+                    break;
+            }
+        }
       
         internal override void OnKeyDown(SDL.SDL_KeyboardEvent e)
         {
-            if (e.keysym.sym == SDL.SDL_Keycode.SDLK_TAB && e.repeat != 0)
-                return;
-
-            if (e.keysym.sym == SDL.SDL_Keycode.SDLK_ESCAPE && TargetManager.IsTargeting)
-            {
-                TargetManager.CancelTarget();
-            }
-
             if (UIManager.KeyboardFocusControl != UIManager.SystemChat.TextBoxControl)
-            {
                 return;
-            }
 
+            // Some keys require more complex handling separate from the keybind manager.
+            // Deal with them here.
             switch (e.keysym.sym)
             {
                 case SDL.SDL_Keycode.SDLK_ESCAPE:
+                    if (TargetManager.IsTargeting)
+                    {
+                        TargetManager.CancelTarget();
+                        break;
+                    }
 
                     if (Pathfinder.AutoWalking && Pathfinder.PathindingCanBeCancelled)
                     {
                         Pathfinder.StopAutoWalk();
+                        break;
                     }
 
                     break;
-                case SDL.SDL_Keycode.SDLK_TAB when !ProfileManager.Current.DisableTabBtn:
-
-                    if (ProfileManager.Current.HoldDownKeyTab)
-                    {
-                        if (!_requestedWarMode)
-                        {
-                            _requestedWarMode = true;
-                            if (!World.Player.InWarMode)
-                                NetClient.Socket.Send(new PChangeWarMode(true));
-                        }
-                    }
-
-                    break;
-
 
                 // chat system activation
 
@@ -804,108 +807,22 @@ namespace ClassicUO.Game.Scenes
                     break;
                 case SDL.SDL_Keycode.SDLK_RETURN:
                 case SDL.SDL_Keycode.SDLK_KP_ENTER:
-
-                    if (UIManager.KeyboardFocusControl == UIManager.SystemChat.TextBoxControl)
+                    if (ProfileManager.Current.ActivateChatAfterEnter)
                     {
-                        if (ProfileManager.Current.ActivateChatAfterEnter)
-                        {
-                            UIManager.SystemChat.Mode = ChatMode.Default;
+                        UIManager.SystemChat.Mode = ChatMode.Default;
 
-                            if (!(Keyboard.IsModPressed(e.keysym.mod, SDL.SDL_Keymod.KMOD_SHIFT) && ProfileManager.Current.ActivateChatShiftEnterSupport))
-                                UIManager.SystemChat.ToggleChatVisibility();
-                        }
-
-                        return;
+                        if (!(Keyboard.IsModPressed(e.keysym.mod, SDL.SDL_Keymod.KMOD_SHIFT) && ProfileManager.Current.ActivateChatShiftEnterSupport))
+                            UIManager.SystemChat.ToggleChatVisibility();
                     }
 
-                    break;
+                    return;
             }
 
-            if (UIManager.KeyboardFocusControl == UIManager.SystemChat.TextBoxControl && UIManager.SystemChat.IsActive && ProfileManager.Current.ActivateChatAfterEnter)
-            {
+            if (UIManager.SystemChat.IsActive && ProfileManager.Current.ActivateChatAfterEnter)
                 return;
-            }
-            
 
-            bool canExecuteMacro = UIManager.KeyboardFocusControl == UIManager.SystemChat.TextBoxControl &&
-                                   UIManager.SystemChat.Mode >= ChatMode.Default;
-
-
-            if (canExecuteMacro)
-            {
-                Macro macro = Macros.FindMacro(e.keysym.sym, Keyboard.Alt, Keyboard.Ctrl, Keyboard.Shift);
-
-                if (macro != null && e.keysym.sym != SDL.SDL_Keycode.SDLK_UNKNOWN)
-                {
-                    if (macro.FirstNode != null && macro.FirstNode.Code == MacroType.Walk)
-                    {
-                        _flags[4] = true;
-
-                        switch (macro.FirstNode.SubCode)
-                        {
-                            case MacroSubType.NW:
-                                _flags[0] = true;
-                                break;
-                            case MacroSubType.SW:
-                                _flags[1] = true;
-                                break;
-                            case MacroSubType.SE:
-                                _flags[2] = true;
-                                break;
-                            case MacroSubType.NE:
-                                _flags[3] = true;
-                                break;
-                            case MacroSubType.N:
-                                _flags[0] = true;
-                                _flags[3] = true;
-                                break;
-                            case MacroSubType.S:
-                                _flags[1] = true;
-                                _flags[2] = true;
-                                break;
-                            case MacroSubType.E:
-                                _flags[3] = true;
-                                _flags[2] = true;
-                                break;
-                            case MacroSubType.W:
-                                _flags[0] = true;
-                                _flags[1] = true;
-                                break;
-                        }
-                    }
-                    else
-                    {
-                        Macros.SetMacroToExecute(macro.FirstNode);
-                        Macros.WaitingBandageTarget = false;
-                        Macros.WaitForTargetTimer = 0;
-                        Macros.Update();
-                    }
-                }
-                else
-                {
-                    if (string.IsNullOrEmpty(UIManager.SystemChat.TextBoxControl.Text))
-                    {
-                        switch (e.keysym.sym)
-                        {
-                            case SDL.SDL_Keycode.SDLK_UP:
-                                _flags[0] = true;
-                                break;
-
-                            case SDL.SDL_Keycode.SDLK_LEFT:
-                                _flags[1] = true;
-                                break;
-
-                            case SDL.SDL_Keycode.SDLK_DOWN:
-                                _flags[2] = true;
-                                break;
-
-                            case SDL.SDL_Keycode.SDLK_RIGHT:
-                                _flags[3] = true;
-                                break;
-                        }
-                    }
-                }
-            }
+            if (KeyBinds.OnKeyDown(e.keysym.sym, e.keysym.mod))
+                return;
         }
 
 
@@ -914,99 +831,8 @@ namespace ClassicUO.Game.Scenes
             if (ProfileManager.Current.EnableMousewheelScaleZoom && ProfileManager.Current.RestoreScaleAfterUnpressCtrl && !Keyboard.Ctrl)
                 Scale = ProfileManager.Current.DefaultScale;
 
-            if (_flags[4])
-            {
-                Macro macro = Macros.FindMacro(e.keysym.sym, Keyboard.Alt, Keyboard.Ctrl, Keyboard.Shift);
-
-                if (macro != null && e.keysym.sym != SDL.SDL_Keycode.SDLK_UNKNOWN)
-                {
-                    if (macro.FirstNode != null && macro.FirstNode.Code == MacroType.Walk)
-                    {
-                        _flags[4] = false;
-
-                        switch (macro.FirstNode.SubCode)
-                        {
-                            case MacroSubType.NW:
-                                _flags[0] = false;
-
-                                break;
-                            case MacroSubType.SW:
-                                _flags[1] = false;
-
-                                break;
-                            case MacroSubType.SE:
-                                _flags[2] = false;
-
-                                break;
-                            case MacroSubType.NE:
-                                _flags[3] = false;
-
-                                break;
-                            case MacroSubType.N:
-                                _flags[0] = false;
-                                _flags[3] = false;
-                                break;
-                            case MacroSubType.S:
-                                _flags[1] = false;
-                                _flags[2] = false;
-                                break;
-                            case MacroSubType.E:
-                                _flags[3] = false;
-                                _flags[2] = false;
-                                break;
-                            case MacroSubType.W:
-                                _flags[0] = false;
-                                _flags[1] = false;
-                                break;
-                        }
-                        Macros.SetMacroToExecute(macro.FirstNode);
-                        Macros.WaitForTargetTimer = 0;
-                        Macros.Update();
-                        for (int i = 0; i < 4; i++)
-                        {
-                            if (_flags[i])
-                            {
-                                _flags[4] = true;
-                                break;
-                            }
-                        }
-
-                    }
-                }
-            }
-
-            switch (e.keysym.sym)
-            {
-                case SDL.SDL_Keycode.SDLK_UP:
-                    _flags[0] = false;
-                    break;
-
-                case SDL.SDL_Keycode.SDLK_LEFT:
-                    _flags[1] = false;
-                    break;
-
-                case SDL.SDL_Keycode.SDLK_DOWN:
-                    _flags[2] = false;
-                    break;
-
-                case SDL.SDL_Keycode.SDLK_RIGHT:
-                    _flags[3] = false;
-                    break;
-            }
-
-            if (e.keysym.sym == SDL.SDL_Keycode.SDLK_TAB && !ProfileManager.Current.DisableTabBtn)
-            {
-                if (ProfileManager.Current.HoldDownKeyTab)
-                {
-                    if (_requestedWarMode)
-                    {
-                        NetClient.Socket.Send(new PChangeWarMode(false));
-                        _requestedWarMode = false;
-                    }
-                }
-                else
-                    GameActions.ChangeWarMode();
-            }
+            if (KeyBinds.OnKeyUp(e.keysym.sym, e.keysym.mod))
+                return;
         }
     }
 }

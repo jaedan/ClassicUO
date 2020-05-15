@@ -424,13 +424,13 @@ namespace ClassicUO.Game.UI.Gumps
         {
             switch (key)
             {
-                case SDL.SDL_Keycode.SDLK_q when Keyboard.IsModPressed(mod, SDL.SDL_Keymod.KMOD_CTRL) && _messageHistoryIndex > -1 && !ProfileManager.Current.DisableCtrlQWBtn:
+                case SDL.SDL_Keycode.SDLK_q when Keyboard.IsModPressed(mod, SDL.SDL_Keymod.KMOD_CTRL) && _messageHistoryIndex > -1:
 
                     var scene = Client.Game.GetScene<GameScene>();
                     if (scene == null)
                         return;
 
-                    if (scene.Macros.FindMacro(key, false, true, false) != null)
+                    if (scene.KeyBinds.IsBound(key, SDL.SDL_Keymod.KMOD_CTRL))
                         return;
 
                     if (!IsActive)
@@ -444,13 +444,13 @@ namespace ClassicUO.Game.UI.Gumps
 
                     break;
 
-                case SDL.SDL_Keycode.SDLK_w when Keyboard.IsModPressed(mod, SDL.SDL_Keymod.KMOD_CTRL) && !ProfileManager.Current.DisableCtrlQWBtn:
+                case SDL.SDL_Keycode.SDLK_w when Keyboard.IsModPressed(mod, SDL.SDL_Keymod.KMOD_CTRL):
 
                     scene = Client.Game.GetScene<GameScene>();
                     if (scene == null)
                         return;
 
-                    if (scene.Macros.FindMacro(key, false, true, false) != null)
+                    if (scene.KeyBinds.IsBound(key, SDL.SDL_Keymod.KMOD_CTRL))
                         return;
 
                     if (!IsActive)

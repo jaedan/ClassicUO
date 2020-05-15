@@ -36,92 +36,21 @@ namespace ClassicUO.Game.UI.Controls
     internal class MacroControl : Control
     {
         private readonly MacroCollectionControl _collection;
-        private readonly HotkeyBox _hotkeyBox;
 
         public MacroControl(string name)
         {
             CanMove = true;
 
-            _hotkeyBox = new HotkeyBox();
+            Add(new NiceButton(0, 3, 170, 25, ButtonAction.Activate, "+ Create macro button", 0, IO.Resources.TEXT_ALIGN_TYPE.TS_LEFT) { ButtonParameter = 2, IsSelectable = false });
 
-            _hotkeyBox.HotkeyChanged += BoxOnHotkeyChanged;
-            _hotkeyBox.HotkeyCancelled += BoxOnHotkeyCancelled;
-
-
-            Add(_hotkeyBox);
-
-            Add(new NiceButton(0, _hotkeyBox.Height + 3, 170, 25, ButtonAction.Activate, "+ Create macro button", 0, IO.Resources.TEXT_ALIGN_TYPE.TS_LEFT) { ButtonParameter = 2, IsSelectable = false });
-
-            Add(new NiceButton(0, _hotkeyBox.Height + 30, 50, 25, ButtonAction.Activate, "Add") {IsSelectable = false});
-            Add(new NiceButton(52, _hotkeyBox.Height + 30, 50, 25, ButtonAction.Activate, "Remove") {ButtonParameter = 1, IsSelectable = false});
+            Add(new NiceButton(0, 30, 50, 25, ButtonAction.Activate, "Add") {IsSelectable = false});
+            Add(new NiceButton(52, 30, 50, 25, ButtonAction.Activate, "Remove") {ButtonParameter = 1, IsSelectable = false});
 
 
             Add(_collection = new MacroCollectionControl(name, 280, 280)
             {
-                Y = _hotkeyBox.Height + 50 + 10
+                Y = 50 + 10
             });
-
-            SetupKeyByDefault();
-        }
-
-
-        private void SetupKeyByDefault()
-        {
-            if (_collection?.Macro == null || _hotkeyBox == null)
-                return;
-
-            if (_collection.Macro.Key != SDL.SDL_Keycode.SDLK_UNKNOWN)
-            {
-                SDL.SDL_Keymod mod = SDL.SDL_Keymod.KMOD_NONE;
-
-                if (_collection.Macro.Alt)
-                    mod |= SDL.SDL_Keymod.KMOD_ALT;
-
-                if (_collection.Macro.Shift)
-                    mod |= SDL.SDL_Keymod.KMOD_SHIFT;
-
-                if (_collection.Macro.Ctrl)
-                    mod |= SDL.SDL_Keymod.KMOD_CTRL;
-
-                _hotkeyBox.SetKey(_collection.Macro.Key, mod);
-            }
-        }
-
-        private void BoxOnHotkeyChanged(object sender, EventArgs e)
-        {
-            bool shift = (_hotkeyBox.Mod & SDL.SDL_Keymod.KMOD_SHIFT) != SDL.SDL_Keymod.KMOD_NONE;
-            bool alt = (_hotkeyBox.Mod & SDL.SDL_Keymod.KMOD_ALT) != SDL.SDL_Keymod.KMOD_NONE;
-            bool ctrl = (_hotkeyBox.Mod & SDL.SDL_Keymod.KMOD_CTRL) != SDL.SDL_Keymod.KMOD_NONE;
-
-            if (_hotkeyBox.Key != SDL.SDL_Keycode.SDLK_UNKNOWN)
-            {
-                Macro macro = Client.Game.GetScene<GameScene>().Macros.FindMacro(_hotkeyBox.Key, alt, ctrl, shift);
-
-                if (macro != null)
-                {
-                    if (_collection.Macro == macro)
-                        return;
-
-                    SetupKeyByDefault();
-                    UIManager.Add(new MessageBoxGump(250, 150, "This key combination\nalready exists.", null));
-                    return;
-                }
-            }
-            else 
-                return;
-
-            Macro m = _collection.Macro;
-            m.Key = _hotkeyBox.Key;
-            m.Shift = shift;
-            m.Alt = alt;
-            m.Ctrl = ctrl;
-        }
-
-        private void BoxOnHotkeyCancelled(object sender, EventArgs e)
-        {
-            Macro m = _collection.Macro;
-            m.Alt = m.Ctrl = m.Shift = false;
-            m.Key = SDL.SDL_Keycode.SDLK_UNKNOWN;
         }
 
         public override void OnButtonClick(int buttonID)

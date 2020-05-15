@@ -560,6 +560,8 @@ namespace ClassicUO.Game.UI.Controls
         public void InvokeMouseWheel(MouseEventType delta)
         {
             OnMouseWheel(delta);
+
+            // TODO: What's this?
             MouseWheel.Raise(new MouseWheelEventArgs(delta), this);
         }
 

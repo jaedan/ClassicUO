@@ -1,20 +1,20 @@
 #region license
 // Copyright (C) 2020 ClassicUO Development Community on Github
-// 
+//
 // This project is an alternative client for the game Ultima Online.
 // The goal of this is to develop a lightweight client considering
 // new technologies.
-// 
+//
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
 //  the Free Software Foundation, either version 3 of the License, or
 //  (at your option) any later version.
-// 
+//
 //  This program is distributed in the hope that it will be useful,
 //  but WITHOUT ANY WARRANTY; without even the implied warranty of
 //  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //  GNU General Public License for more details.
-// 
+//
 //  You should have received a copy of the GNU General Public License
 //  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #endregion
@@ -67,7 +67,7 @@ namespace ClassicUO.Game.UI.Gumps
         private TextBox _rows, _columns, _highlightAmount, _abbreviatedAmount;
 
         //experimental
-        private Checkbox  _autoOpenDoors, _autoOpenCorpse, _skipEmptyCorpse, _disableTabBtn, _disableCtrlQWBtn, _disableDefaultHotkeys, _disableArrowBtn, _disableAutoMove, _overrideContainerLocation, _smoothDoors, _showTargetRangeIndicator, _customBars, _customBarsBBG, _saveHealthbars;
+        private Checkbox  _autoOpenDoors, _autoOpenCorpse, _skipEmptyCorpse,  _overrideContainerLocation, _smoothDoors, _showTargetRangeIndicator, _customBars, _customBarsBBG, _saveHealthbars;
         private Combobox _overrideContainerLocationSetting;
         private Checkbox _use_smooth_boat_movement;
 
@@ -135,6 +135,20 @@ namespace ClassicUO.Game.UI.Gumps
 
         public OptionsGump() : base(0, 0)
         {
+            AcceptMouseInput = true;
+            CanMove = true;
+            CanCloseWithRightClick = true;
+
+            ChangePage(1);
+            UpdateContents();
+        }
+
+        protected override void UpdateContents()
+        {
+            // Wipe it
+            foreach (var control in Children)
+                control.Dispose();
+
             Add(new AlphaBlendControl(0.05f)
             {
                 X = 1,
@@ -157,18 +171,18 @@ namespace ClassicUO.Game.UI.Gumps
 
             Add(tc);
 
-            Add(new NiceButton(10, 10, 140, 25, ButtonAction.SwitchPage, "General") {IsSelected = true, ButtonParameter = 1});
-            Add(new NiceButton(10, 10 + 30 * 1, 140, 25, ButtonAction.SwitchPage, "Sound") {ButtonParameter = 2});
-            Add(new NiceButton(10, 10 + 30 * 2, 140, 25, ButtonAction.SwitchPage, "Video") {ButtonParameter = 3});
-            Add(new NiceButton(10, 10 + 30 * 3, 140, 25, ButtonAction.SwitchPage, "Macros") {ButtonParameter = 4});
-            //Add(new NiceButton(10, 10 + 30 * 4, 140, 25, ButtonAction.SwitchPage, "Tooltip") {ButtonParameter = 5});
-            Add(new NiceButton(10, 10 + 30 * 4, 140, 25, ButtonAction.SwitchPage, "Fonts") {ButtonParameter = 6});
-            Add(new NiceButton(10, 10 + 30 * 5, 140, 25, ButtonAction.SwitchPage, "Speech") {ButtonParameter = 7});
-            Add(new NiceButton(10, 10 + 30 * 6, 140, 25, ButtonAction.SwitchPage, "Combat-Spells") {ButtonParameter = 8});
-            Add(new NiceButton(10, 10 + 30 * 7, 140, 25, ButtonAction.SwitchPage, "Counters") {ButtonParameter = 9});
-            Add(new NiceButton(10, 10 + 30 * 8, 140, 25, ButtonAction.SwitchPage, "Info Bar") { ButtonParameter = 10 });
-            Add(new NiceButton(10, 10 + 30 * 9, 140, 25, ButtonAction.SwitchPage, "Containers") { ButtonParameter = 11 });
-            Add(new NiceButton(10, 10 + 30 * 10, 140, 25, ButtonAction.SwitchPage, "Experimental") { ButtonParameter = 12 });
+            Add(new NiceButton(10, 10, 140, 25, ButtonAction.SwitchPage, "General") { IsSelected = (ActivePage == 1), ButtonParameter = 1 });
+            Add(new NiceButton(10, 10 + 30 * 1, 140, 25, ButtonAction.SwitchPage, "Sound") { IsSelected = (ActivePage == 2), ButtonParameter = 2 });
+            Add(new NiceButton(10, 10 + 30 * 2, 140, 25, ButtonAction.SwitchPage, "Video") { IsSelected = (ActivePage == 3), ButtonParameter = 3 });
+            Add(new NiceButton(10, 10 + 30 * 3, 140, 25, ButtonAction.SwitchPage, "Key Bindings") { IsSelected = (ActivePage == 4), ButtonParameter = 4 });
+            Add(new NiceButton(10, 10 + 30 * 4, 140, 25, ButtonAction.SwitchPage, "Macros") { IsSelected = (ActivePage == 5), ButtonParameter = 5 });
+            Add(new NiceButton(10, 10 + 30 * 5, 140, 25, ButtonAction.SwitchPage, "Fonts") { IsSelected = (ActivePage == 6), ButtonParameter = 6 });
+            Add(new NiceButton(10, 10 + 30 * 6, 140, 25, ButtonAction.SwitchPage, "Speech") { IsSelected = (ActivePage == 7), ButtonParameter = 7 });
+            Add(new NiceButton(10, 10 + 30 * 7, 140, 25, ButtonAction.SwitchPage, "Combat-Spells") { IsSelected = (ActivePage == 8), ButtonParameter = 8 });
+            Add(new NiceButton(10, 10 + 30 * 8, 140, 25, ButtonAction.SwitchPage, "Counters") { IsSelected = (ActivePage == 9), ButtonParameter = 9 });
+            Add(new NiceButton(10, 10 + 30 * 9, 140, 25, ButtonAction.SwitchPage, "Info Bar") { IsSelected = (ActivePage == 10), ButtonParameter = 10 });
+            Add(new NiceButton(10, 10 + 30 * 10, 140, 25, ButtonAction.SwitchPage, "Containers") { IsSelected = (ActivePage == 11), ButtonParameter = 11 });
+            Add(new NiceButton(10, 10 + 30 * 11, 140, 25, ButtonAction.SwitchPage, "Experimental") { IsSelected = (ActivePage == 12), ButtonParameter = 12 });
 
 
             Add(new Line(160, 5, 1, HEIGHT - 10, Color.Gray.PackedValue));
@@ -178,44 +192,46 @@ namespace ClassicUO.Game.UI.Gumps
 
             Add(new Line(160, 405 + 35 + 1, WIDTH - 160, 1, Color.Gray.PackedValue));
 
-            Add(new Button((int) Buttons.Cancel, 0x00F3, 0x00F1, 0x00F2)
+            Add(new Button((int)Buttons.Cancel, 0x00F3, 0x00F1, 0x00F2)
             {
-                X = 154 + offsetX, Y = 405 + offsetY, ButtonAction = ButtonAction.Activate
+                X = 154 + offsetX,
+                Y = 405 + offsetY,
+                ButtonAction = ButtonAction.Activate
             });
 
-            Add(new Button((int) Buttons.Apply, 0x00EF, 0x00F0, 0x00EE)
+            Add(new Button((int)Buttons.Apply, 0x00EF, 0x00F0, 0x00EE)
             {
-                X = 248 + offsetX, Y = 405 + offsetY, ButtonAction = ButtonAction.Activate
+                X = 248 + offsetX,
+                Y = 405 + offsetY,
+                ButtonAction = ButtonAction.Activate
             });
 
-            Add(new Button((int) Buttons.Default, 0x00F6, 0x00F4, 0x00F5)
+            Add(new Button((int)Buttons.Default, 0x00F6, 0x00F4, 0x00F5)
             {
-                X = 346 + offsetX, Y = 405 + offsetY, ButtonAction = ButtonAction.Activate
+                X = 346 + offsetX,
+                Y = 405 + offsetY,
+                ButtonAction = ButtonAction.Activate
             });
 
-            Add(new Button((int) Buttons.Ok, 0x00F9, 0x00F8, 0x00F7)
+            Add(new Button((int)Buttons.Ok, 0x00F9, 0x00F8, 0x00F7)
             {
-                X = 443 + offsetX, Y = 405 + offsetY, ButtonAction = ButtonAction.Activate
+                X = 443 + offsetX,
+                Y = 405 + offsetY,
+                ButtonAction = ButtonAction.Activate
             });
-
-            AcceptMouseInput = true;
-            CanMove = true;
-            CanCloseWithRightClick = true;
 
             BuildGeneral();
             BuildSounds();
             BuildVideo();
-            BuildCommands();
+            BuildKeyBindings();
+            BuildMacros();
             BuildFonts();
             BuildSpeech();
             BuildCombat();
-            BuildTooltip();
             BuildCounters();
             BuildInfoBar();
             BuildContainers();
             BuildExperimental();
-
-            ChangePage(1);
         }
 
         private static UOTexture LogoTexture
@@ -277,7 +293,6 @@ namespace ClassicUO.Game.UI.Gumps
             alwaysRunItem.IsVisible = _alwaysRun.IsChecked;
 
             _enableTopbar = CreateCheckBox(rightArea, "Disable the Menu Bar", ProfileManager.Current.TopbarGumpIsDisabled, 0, SPACE_Y);
-            _holdDownKeyTab = CreateCheckBox(rightArea, "Hold TAB key for combat", ProfileManager.Current.HoldDownKeyTab, 0, SPACE_Y);
             _holdDownKeyAlt = CreateCheckBox(rightArea, "Hold ALT key + right click to close Anchored gumps", ProfileManager.Current.HoldDownKeyAltToCloseAnchored, 0, SPACE_Y);
             _closeAllAnchoredGumpsWithRClick = CreateCheckBox(rightArea, "Close all Anchored gumps when right click on a group", ProfileManager.Current.CloseAllAnchoredGumpsInGroupWithRightClick, 0, SPACE_Y);
             _holdAltToMoveGumps = CreateCheckBox(rightArea, "Hold ALT key to move gumps", ProfileManager.Current.HoldAltToMoveGumps, 0, SPACE_Y);
@@ -294,7 +309,7 @@ namespace ClassicUO.Game.UI.Gumps
             _showMobileNameIncoming = CreateCheckBox(rightArea, "Show incoming new mobiles", ProfileManager.Current.ShowNewMobileNameIncoming, 0, SPACE_Y);
             _showCorpseNameIncoming = CreateCheckBox(rightArea, "Show incoming new corpses", ProfileManager.Current.ShowNewCorpseNameIncoming, 0, SPACE_Y);
             _sallosEasyGrab = CreateCheckBox(rightArea, "Sallos easy grab", ProfileManager.Current.SallosEasyGrab, 0, SPACE_Y);
-            _partyInviteGump = CreateCheckBox(rightArea, "Show gump for party invites", ProfileManager.Current.PartyInviteGump, 0, SPACE_Y);          
+            _partyInviteGump = CreateCheckBox(rightArea, "Show gump for party invites", ProfileManager.Current.PartyInviteGump, 0, SPACE_Y);
             _showHouseContent = CreateCheckBox(rightArea, "Show houses content", ProfileManager.Current.ShowHouseContent, 0, SPACE_Y);
             _showHouseContent.IsVisible = Client.Version >= ClientVersion.CV_70796;
             _customBars = CreateCheckBox(rightArea, "Use Custom Health Bars", ProfileManager.Current.CustomBarsToggled, 0, SPACE_Y);
@@ -416,7 +431,7 @@ namespace ClassicUO.Game.UI.Gumps
 
             _autoOpenCorpseArea.IsVisible = _autoOpenCorpse.IsChecked;
             _dragSelectArea.IsVisible = _enableDragSelect.IsChecked;
-            
+
             ScrollAreaItem hpAreaItem = new ScrollAreaItem();
 
             _showHpMobile = new Checkbox(0x00D2, 0x00D3, "Show HP", FONT, HUE_FONT)
@@ -510,7 +525,7 @@ namespace ClassicUO.Game.UI.Gumps
 
 
             ScrollAreaItem item = new ScrollAreaItem();
-           
+
             _enableSounds = new Checkbox(0x00D2, 0x00D3, "Sounds", FONT, HUE_FONT)
             {
                 IsChecked = ProfileManager.Current.EnableSound,
@@ -745,7 +760,7 @@ namespace ClassicUO.Game.UI.Gumps
 
             _useColoredLights = CreateCheckBox(rightArea, "Use colored lights", ProfileManager.Current.UseColoredLights, 0, SPACE_Y);
             _enableShadows = CreateCheckBox(rightArea, "Shadows", ProfileManager.Current.ShadowsEnabled, 0, SPACE_Y);
-            
+
 
             item = new ScrollAreaItem();
             item.Y = SPACE_Y;
@@ -769,10 +784,75 @@ namespace ClassicUO.Game.UI.Gumps
             Add(rightArea, PAGE);
         }
 
-
-        private void BuildCommands()
+        private void BuildKeyBindings()
         {
             const int PAGE = 4;
+
+            ScrollArea area = new ScrollArea(190, 20, WIDTH - 190, 420, true);
+            Add(area, PAGE);
+
+            Label text;
+            ScrollAreaItem item;
+
+            var keybindManager = Client.Game.GetScene<GameScene>().KeyBinds;
+
+            foreach (var category in keybindManager.GetCategories())
+            {
+                area.Add(new Line(0, 0, area.Width, 3, Color.Gray.PackedValue), PAGE);
+
+                item = new ScrollAreaItem();
+
+                text = new Label(category, true, HUE_FONT, align: TEXT_ALIGN_TYPE.TS_CENTER)
+                {
+                    X = 0,
+                    Y = 10,
+                    Width = 200,
+                    Height = 30
+                };
+                item.Add(text);
+
+                area.Add(item);
+                area.Add(new Line(0, text.Y, area.Width, 3, Color.Gray.PackedValue), PAGE);
+
+                foreach (var action in keybindManager.GetActionsInCategory(category))
+                {
+                    item = new ScrollAreaItem();
+
+                    text = new Label(action, true, HUE_FONT)
+                    {
+                        X = 0,
+                        Y = 0,
+                        Width = 200,
+                        Height = 20
+                    };
+                    item.Add(text);
+
+                    var keyCombo = keybindManager.GetKeyCombination(category, action);
+
+                    var button = new KeyBindBox(text.Width + 10, 0, area.Width - text.Width, text.Height, keyCombo);
+
+                    button.OnKeyBindSet += (b, e) =>
+                    {
+                        KeyBindBox kb = (KeyBindBox)b;
+                        keybindManager.Bind(category, action, kb.Key, kb.Mod);
+                    };
+
+                    button.OnKeyBindCleared += (b, e) =>
+                    {
+                        keybindManager.Unbind(category, action);
+                    };
+
+                    item.Add(button);
+
+                    area.Add(item);
+                    area.Add(new Line(0, text.Y, area.Width, 1, Color.Gray.PackedValue), PAGE);
+                }
+            }
+        }
+
+        private void BuildMacros()
+        {
+            const int PAGE = 5;
 
             ScrollArea rightArea = new ScrollArea(190, 52 + 25 + 4, 150, 360, true);
             NiceButton addButton = new NiceButton(190, 20, 130, 20, ButtonAction.Activate, "New macro") {IsSelectable = false, ButtonParameter = (int) Buttons.NewMacro};
@@ -808,6 +888,7 @@ namespace ClassicUO.Game.UI.Gumps
                     };
 
                     Add(_macroControl, PAGE);
+                    RequestUpdateContents();
 
                     nb.DragBegin += (sss, eee) =>
                     {
@@ -874,6 +955,7 @@ namespace ClassicUO.Game.UI.Gumps
 
                             UIManager.Gumps.OfType<MacroButtonGump>().FirstOrDefault(s => s._macro == control.Macro)?.Dispose();
                             Client.Game.GetScene<GameScene>().Macros.RemoveMacro(control.Macro);
+                            RequestUpdateContents();
                         }
 
                         if (rightArea.Children.OfType<ScrollAreaItem>().All(s => s.IsDisposed)) _macroControl?.Dispose();
@@ -925,14 +1007,6 @@ namespace ClassicUO.Game.UI.Gumps
                     Add(_macroControl, PAGE);
                 };
             }
-        }
-
-        private void BuildTooltip()
-        {
-            const int PAGE = 5;
-            ScrollArea rightArea = new ScrollArea(190, 20, WIDTH - 210, 420, true);
-            ScrollAreaItem item = new ScrollAreaItem();
-            Add(rightArea, PAGE);
         }
 
         private void BuildFonts()
@@ -1033,7 +1107,7 @@ namespace ClassicUO.Game.UI.Gumps
                 rightArea.Add(_activeChatArea);
             }
 
-            
+
 
             _randomizeColorsButton = new NiceButton(0, 20 + SPACE_Y, 140, 25, ButtonAction.Activate, "Randomize speech hues") { ButtonParameter = (int)Buttons.Disabled };
             _randomizeColorsButton.MouseUp += (sender, e) =>
@@ -1208,54 +1282,6 @@ namespace ClassicUO.Game.UI.Gumps
             const int PAGE = 12;
             ScrollArea rightArea = new ScrollArea(190, 20, WIDTH - 210, 420, true);
 
-            
-
-            // [BLOCK] disable hotkeys
-            {
-                _disableDefaultHotkeys = CreateCheckBox(rightArea, "Disable default UO hotkeys", ProfileManager.Current.DisableDefaultHotkeys, 0, SPACE_Y);
-                _disableDefaultHotkeys.ValueChanged += (sender, e) => { _defaultHotkeysArea.IsVisible = _disableDefaultHotkeys.IsChecked; };
-
-                rightArea.Add(_disableDefaultHotkeys);
-
-                _defaultHotkeysArea = new ScrollAreaItem();
-
-                _disableArrowBtn = new Checkbox(0x00D2, 0x00D3, "Disable arrows & numlock arrows (player moving)", FONT, HUE_FONT)
-                {
-                    X = 20,
-                    Y = 5,
-                    IsChecked = ProfileManager.Current.DisableArrowBtn
-                };
-                _defaultHotkeysArea.Add(_disableArrowBtn);
-
-                _disableTabBtn = new Checkbox(0x00D2, 0x00D3, "Disable TAB (toggle warmode)", FONT, HUE_FONT)
-                {
-                    X = 20,
-                    Y = 25,
-                    IsChecked = ProfileManager.Current.DisableTabBtn
-                };
-                _defaultHotkeysArea.Add(_disableTabBtn);
-
-                _disableCtrlQWBtn = new Checkbox(0x00D2, 0x00D3, "Disable Ctrl + Q/W (messageHistory)", FONT, HUE_FONT)
-                {
-                    X = 20,
-                    Y = 45,
-                    IsChecked = ProfileManager.Current.DisableCtrlQWBtn
-                };
-
-                _disableAutoMove = new Checkbox(0x00D2, 0x00D3, "Disable Right+Left Click Automove", FONT, HUE_FONT)
-                {
-                    X = 20,
-                    Y = 45,
-                    IsChecked = ProfileManager.Current.DisableAutoMove
-                };
-                _defaultHotkeysArea.Add(_disableAutoMove);
-
-                rightArea.Add(_defaultHotkeysArea);
-
-                _defaultHotkeysArea.IsVisible = _disableDefaultHotkeys.IsChecked;
-            }
-
-            
             Add(rightArea, PAGE);
         }
 
@@ -1395,6 +1421,7 @@ namespace ClassicUO.Game.UI.Gumps
 
         private void SetDefault()
         {
+            // TODO: FIX UP
             switch (ActivePage)
             {
                 case 1: // general
@@ -1584,12 +1611,6 @@ namespace ClassicUO.Game.UI.Gumps
                     break;
 
                 case 12: // experimental
-                 
-                    _disableDefaultHotkeys.IsChecked = false;
-                    _disableArrowBtn.IsChecked = false;
-                    _disableTabBtn.IsChecked = false;
-                    _disableCtrlQWBtn.IsChecked = false;
-                    _disableAutoMove.IsChecked = false;
 
                     break;
             }
@@ -1617,7 +1638,6 @@ namespace ClassicUO.Game.UI.Gumps
             ProfileManager.Current.InvulnerableHue = _invulnerableColorPickerBox.Hue;
             ProfileManager.Current.MobileHPType = _hpComboBox.SelectedIndex;
             ProfileManager.Current.MobileHPShowWhen = _hpComboBoxShowWhen.SelectedIndex;
-            ProfileManager.Current.HoldDownKeyTab = _holdDownKeyTab.IsChecked;
             ProfileManager.Current.HoldDownKeyAltToCloseAnchored = _holdDownKeyAlt.IsChecked;
             ProfileManager.Current.CloseAllAnchoredGumpsInGroupWithRightClick = _closeAllAnchoredGumpsWithRClick.IsChecked;
             ProfileManager.Current.HoldShiftForContext = _holdShiftForContext.IsChecked;
@@ -1902,6 +1922,9 @@ namespace ClassicUO.Game.UI.Gumps
             ProfileManager.Current.EnabledSpellFormat = _spellFormatCheckbox.IsChecked;
             ProfileManager.Current.SpellDisplayFormat = _spellFormatBox.Text;
 
+            // keybinds
+            Client.Game.GetScene<GameScene>().KeyBinds.Save();
+
             // macros
             Client.Game.GetScene<GameScene>().Macros.Save();
 
@@ -1937,22 +1960,7 @@ namespace ClassicUO.Game.UI.Gumps
                     counterGump.IsEnabled = counterGump.IsVisible = ProfileManager.Current.CounterBarEnabled;
             }
 
-            // experimental
-            // Reset nested checkboxes if parent checkbox is unchecked
-            if (!_disableDefaultHotkeys.IsChecked)
-            {
-                _disableArrowBtn.IsChecked = false;
-                _disableTabBtn.IsChecked = false;
-                _disableCtrlQWBtn.IsChecked = false;
-                _disableAutoMove.IsChecked = false;
-            }
-
             // NOTE: Keep these assignments AFTER the code above that resets nested checkboxes if parent checkbox is unchecked
-            ProfileManager.Current.DisableDefaultHotkeys = _disableDefaultHotkeys.IsChecked;
-            ProfileManager.Current.DisableArrowBtn = _disableArrowBtn.IsChecked;
-            ProfileManager.Current.DisableTabBtn = _disableTabBtn.IsChecked;
-            ProfileManager.Current.DisableCtrlQWBtn = _disableCtrlQWBtn.IsChecked;
-            ProfileManager.Current.DisableAutoMove = _disableAutoMove.IsChecked;
             ProfileManager.Current.AutoOpenDoors = _autoOpenDoors.IsChecked;
             ProfileManager.Current.SmoothDoors = _smoothDoors.IsChecked;
             ProfileManager.Current.AutoOpenCorpses = _autoOpenCorpse.IsChecked;
@@ -2062,7 +2070,7 @@ namespace ClassicUO.Game.UI.Gumps
         }
 
         internal void UpdateVideo()
-        {            
+        {
             _gameWindowWidth.Text = ProfileManager.Current.GameWindowSize.X.ToString();
             _gameWindowHeight.Text = ProfileManager.Current.GameWindowSize.Y.ToString();
             _gameWindowPositionX.Text = ProfileManager.Current.GameWindowPosition.X.ToString();

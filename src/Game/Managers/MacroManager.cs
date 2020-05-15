@@ -83,12 +83,7 @@ namespace ClassicUO.Game.Managers
 
             if (!File.Exists(path))
             {
-                Log.Trace("No macros.xml file. Creating a default file.");
-
-                Clear();
-                CreateDefaultMacros();
-                Save();
-
+                Log.Trace("No macros.xml file.");
                 return;
             }
 
@@ -115,6 +110,25 @@ namespace ClassicUO.Game.Managers
                     Macro macro = new Macro(xml.GetAttribute("name"));
                     macro.Load(xml);
                     AppendMacro(macro);
+
+                    try
+                    {
+                        // For loading old macro files
+                        var key = (SDL.SDL_Keycode)int.Parse(xml.GetAttribute("key"));
+
+                        var alt = bool.Parse(xml.GetAttribute("alt"));
+                        var ctrl = bool.Parse(xml.GetAttribute("ctrl"));
+                        var shift = bool.Parse(xml.GetAttribute("shift"));
+
+                        SDL.SDL_Keymod mod = SDL.SDL_Keymod.KMOD_NONE;
+                        if (alt) mod |= SDL.SDL_Keymod.KMOD_ALT;
+                        if (ctrl) mod |= SDL.SDL_Keymod.KMOD_CTRL;
+                        if (shift) mod |= SDL.SDL_Keymod.KMOD_SHIFT;
+
+                        Client.Game.GetScene<GameScene>().KeyBinds.Bind("Macros", macro.Name, key, mod);
+                    }
+                    catch (Exception)
+                    { }
                 }
             }
         }
@@ -145,66 +159,6 @@ namespace ClassicUO.Game.Managers
             }
         }
 
-        private void CreateDefaultMacros()
-        {
-            AppendMacro(new Macro("Paperdoll", (SDL.SDL_Keycode) 112, true, false, false)
-            {
-                FirstNode = new MacroObject((MacroType) 8, (MacroSubType) 10)
-                {
-                    SubMenuType = 1
-                }
-            });
-
-            AppendMacro(new Macro("Options", (SDL.SDL_Keycode) 111, true, false, false)
-            {
-                FirstNode = new MacroObject((MacroType) 8, (MacroSubType) 9)
-                {
-                    SubMenuType = 1
-                }
-            });
-
-            AppendMacro(new Macro("Journal", (SDL.SDL_Keycode) 106, true, false, false)
-            {
-                FirstNode = new MacroObject((MacroType) 8, (MacroSubType) 12)
-                {
-                    SubMenuType = 1
-                }
-            });
-
-            AppendMacro(new Macro("Backpack", (SDL.SDL_Keycode) 105, true, false, false)
-            {
-                FirstNode = new MacroObject((MacroType) 8, (MacroSubType) 16)
-                {
-                    SubMenuType = 1
-                }
-            });
-
-            AppendMacro(new Macro("Radar", (SDL.SDL_Keycode) 114, true, false, false)
-            {
-                FirstNode = new MacroObject((MacroType) 8, (MacroSubType) 17)
-                {
-                    SubMenuType = 1
-                }
-            });
-
-            AppendMacro(new Macro("Bow", (SDL.SDL_Keycode) 98, false, true, false)
-            {
-                FirstNode = new MacroObject((MacroType) 18, 0)
-                {
-                    SubMenuType = 0
-                }
-            });
-
-            AppendMacro(new Macro("Salute", (SDL.SDL_Keycode) 115, false, true, false)
-            {
-                FirstNode = new MacroObject((MacroType) 19, 0)
-                {
-                    SubMenuType = 0
-                }
-            });
-        }
-
-
         public void Clear()
         {
             while (_firstNode != null)
@@ -214,6 +168,8 @@ namespace ClassicUO.Game.Managers
 
         public void AppendMacro(Macro macro)
         {
+            Client.Game.GetScene<GameScene>().KeyBinds.AddAction("Macros", macro.Name, () => this.Execute(macro.FirstNode));
+
             if (_firstNode == null)
                 _firstNode = macro;
             else
@@ -231,6 +187,9 @@ namespace ClassicUO.Game.Managers
 
         public void RemoveMacro(Macro macro)
         {
+            Client.Game.GetScene<GameScene>().KeyBinds.Unbind("Macros", macro.Name);
+            Client.Game.GetScene<GameScene>().KeyBinds.RemoveAction("Macros", macro.Name);
+
             if (_firstNode == null || macro == null)
                 return;
 
@@ -269,22 +228,6 @@ namespace ClassicUO.Game.Managers
             return macros;
         }
 
-
-        public Macro FindMacro(SDL.SDL_Keycode key, bool alt, bool ctrl, bool shift)
-        {
-            Macro obj = _firstNode;
-
-            while (obj != null)
-            {
-                if (obj.Key == key && obj.Alt == alt && obj.Ctrl == ctrl && obj.Shift == shift)
-                    break;
-
-                obj = obj.Right;
-            }
-
-            return obj;
-        }
-
         public Macro FindMacro(string name)
         {
             Macro obj = _firstNode;
@@ -300,9 +243,12 @@ namespace ClassicUO.Game.Managers
             return obj;
         }
 
-        public void SetMacroToExecute(MacroObject macro)
+        public void Execute(MacroObject macro)
         {
+            WaitingBandageTarget = false;
+            WaitForTargetTimer = 0;
             _lastMacro = macro;
+            Update();
         }
 
         public void Update()
@@ -412,7 +358,7 @@ namespace ClassicUO.Game.Managers
                     break;
 
                 case MacroType.WarPeace:
-                    GameActions.ChangeWarMode();
+                    GameActions.ToggleWarMode();
 
                     break;
 
@@ -440,18 +386,7 @@ namespace ClassicUO.Game.Managers
                             switch (macro.SubCode)
                             {
                                 case MacroSubType.Configuration:
-                                    OptionsGump opt = UIManager.GetGump<OptionsGump>();
-
-                                    if (opt == null)
-                                    {
-                                        UIManager.Add(opt = new OptionsGump());
-                                        opt.SetInScreen();
-                                    }
-                                    else
-                                    {
-                                        opt.SetInScreen();
-                                        opt.BringOnTop();
-                                    }
+                                    GameActions.OpenSettings();
 
                                     break;
 
@@ -461,31 +396,17 @@ namespace ClassicUO.Game.Managers
                                     break;
 
                                 case MacroSubType.Status:
-
-                                    if (StatusGumpBase.GetStatusGump() == null)
-                                        StatusGumpBase.AddStatusGump(100, 100);
+                                    GameActions.OpenStatusBar();
 
                                     break;
 
                                 case MacroSubType.Journal:
-                                    JournalGump journalGump = UIManager.GetGump<JournalGump>();
-
-                                    if (journalGump == null)
-                                    {
-                                        UIManager.Add(new JournalGump
-                                        { X = 64, Y = 64 });
-                                    }
-                                    else
-                                    {
-                                        journalGump.SetInScreen();
-                                        journalGump.BringOnTop();
-                                    }
+                                    GameActions.OpenJournal();
 
                                     break;
 
                                 case MacroSubType.Skills:
-                                    World.SkillsRequested = true;
-                                    NetClient.Socket.Send(new PSkillsRequest(World.Player));
+                                    GameActions.OpenSkills();
 
                                     break;
 
@@ -1445,25 +1366,12 @@ namespace ClassicUO.Game.Managers
     internal class Macro : IEquatable<Macro>, INode<Macro>
     {
         [JsonConstructor]
-        public Macro(string name, SDL.SDL_Keycode key, bool alt, bool ctrl, bool shift) : this(name)
-        {
-            Key = key;
-            Alt = alt;
-            Ctrl = ctrl;
-            Shift = shift;
-        }
-
         public Macro(string name)
         {
             Name = name;
         }
 
         [JsonProperty] public string Name { get; }
-
-        [JsonProperty] public SDL.SDL_Keycode Key { get; set; }
-        [JsonProperty] public bool Alt { get; set; }
-        [JsonProperty] public bool Ctrl { get; set; }
-        [JsonProperty] public bool Shift { get; set; }
 
         [JsonProperty] public MacroObject FirstNode { get; set; }
 
@@ -1472,7 +1380,7 @@ namespace ClassicUO.Game.Managers
             if (other == null)
                 return false;
 
-            return Key == other.Key && Alt == other.Alt && Ctrl == other.Ctrl && Shift == other.Shift && Name == other.Name;
+            return Name == other.Name;
         }
 
         [JsonIgnore] public Macro Left { get; set; }
@@ -1499,10 +1407,6 @@ namespace ClassicUO.Game.Managers
         {
             writer.WriteStartElement("macro");
             writer.WriteAttributeString("name", Name);
-            writer.WriteAttributeString("key", ((int) Key).ToString());
-            writer.WriteAttributeString("alt", Alt.ToString());
-            writer.WriteAttributeString("ctrl", Ctrl.ToString());
-            writer.WriteAttributeString("shift", Shift.ToString());
 
             writer.WriteStartElement("actions");
             for (MacroObject action = FirstNode; action != null; action = action.Right)
@@ -1525,11 +1429,6 @@ namespace ClassicUO.Game.Managers
         {
             if (xml == null)
                 return;
-
-            Key = (SDL.SDL_Keycode) int.Parse(xml.GetAttribute("key"));
-            Alt = bool.Parse(xml.GetAttribute("alt"));
-            Ctrl = bool.Parse(xml.GetAttribute("ctrl"));
-            Shift = bool.Parse(xml.GetAttribute("shift"));
 
             var actions = xml["actions"];
 
@@ -1612,7 +1511,7 @@ namespace ClassicUO.Game.Managers
 
         public static Macro CreateEmptyMacro(string name)
         {
-            Macro macro = new Macro(name, 0, false, false, false);
+            Macro macro = new Macro(name);
             MacroObject item = new MacroObject(MacroType.None, MacroSubType.MSC_NONE);
 
             macro.AppendMacro(item);

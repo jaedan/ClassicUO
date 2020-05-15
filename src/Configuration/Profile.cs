@@ -134,7 +134,6 @@ namespace ClassicUO.Configuration
         [JsonProperty] public bool AlwaysRun { get; set; }
         [JsonProperty] public bool AlwaysRunUnlessHidden { get; set; }
         [JsonProperty] public bool SmoothMovements { get; set; } = true;
-        [JsonProperty] public bool HoldDownKeyTab { get; set; } = true;
         [JsonProperty] public bool HoldShiftForContext { get; set; } = false;
         [JsonProperty] public bool HoldShiftToSplitStack { get; set; } = false;
 
@@ -172,11 +171,6 @@ namespace ClassicUO.Configuration
         [JsonProperty] public int AutoOpenCorpseRange { get; set; } = 2;
         [JsonProperty] public int CorpseOpenOptions { get; set; } = 3;
         [JsonProperty] public bool SkipEmptyCorpse { get; set; }
-        [JsonProperty] public bool DisableDefaultHotkeys { get; set; }
-        [JsonProperty] public bool DisableArrowBtn { get; set; }
-        [JsonProperty] public bool DisableTabBtn { get; set; }
-        [JsonProperty] public bool DisableCtrlQWBtn { get; set; }
-        [JsonProperty] public bool DisableAutoMove { get; set; }
         [JsonProperty] public bool EnableDragSelect { get; set; }
         [JsonProperty] public int DragSelectModifierKey { get; set; } // 0 = none, 1 = control, 2 = shift
         [JsonProperty] public bool OverrideContainerLocation { get; set; }

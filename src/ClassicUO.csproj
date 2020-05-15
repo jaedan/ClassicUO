@@ -156,7 +156,7 @@
     <Compile Include="Game\Managers\CorpseManager.cs" />
     <Compile Include="Game\Managers\HouseCustomizationManager.cs" />
     <Compile Include="Game\Managers\HealthLinesManager.cs" />
-    <Compile Include="Game\Managers\HotkeysManager.cs" />
+    <Compile Include="Game\Managers\KeyBindManager.cs" />
     <Compile Include="Game\Managers\InfoBarManager.cs" />
     <Compile Include="Game\Managers\MacroManager.cs" />
     <Compile Include="Game\Managers\AudioManager.cs" />
@@ -180,8 +180,7 @@
     <Compile Include="Game\UI\Controls\EditableLabel.cs" />
     <Compile Include="Game\UI\Controls\GumpPicWithWidth.cs" />
     <Compile Include="Game\UI\Controls\HorizontalScrollArea.cs" />
-    <Compile Include="Game\UI\Controls\HotkeyBox.cs" />
-    <Compile Include="Game\UI\Controls\HotkeyControl.cs" />
+    <Compile Include="Game\UI\Controls\KeyBindControl.cs" />
     <Compile Include="Game\UI\Controls\MacroControl.cs" />
     <Compile Include="Game\UI\Controls\MultiLineBox.cs" />
     <Compile Include="Game\UI\Controls\MultiSelectionShrinkbox.cs" />
