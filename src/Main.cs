@@ -146,7 +146,6 @@ namespace ClassicUO
             }
 
             Settings.GlobalSettings = ConfigurationResolver.Load<Settings>(globalSettingsPath);
-            CUOEnviroment.IsOutlands = Settings.GlobalSettings.ShardType == 2;
 
             ReadSettingsFromArgs(args);
 
@@ -157,23 +156,20 @@ namespace ClassicUO
                 Settings.GlobalSettings.Save();
             }
 
+            // Override whatever garbage they passed in.
+            if (!Settings.GlobalSettings.IP.Equals("test.uooutlands.com") && !Settings.GlobalSettings.IP.Equals("play.uooutlands.com") && !Settings.GlobalSettings.IP.Equals("127.0.0.1"))
+                Settings.GlobalSettings.IP = "play.uooutlands.com";
+            Settings.GlobalSettings.ShardType = 2;
+            Settings.GlobalSettings.ClientVersion = "7.0.15.1";
+            Settings.GlobalSettings.Encryption = 0;
+
+            CUOEnviroment.IsOutlands = Settings.GlobalSettings.ShardType == 2;
+
             if (!CUOEnviroment.IsUnix)
             {
                 string libsPath = Path.Combine(CUOEnviroment.ExecutablePath, Environment.Is64BitProcess ? "x64" : "x86");
                 SetDllDirectory(libsPath);
             }
-
-            // FIXME: force to use OpenGL in osx and linux contexts. Metal wants texture converted in .Color instead of BGRA5551.
-            //        Check the branch "fna3d-macos-fix"
-            /*if (CUOEnviroment.IsUnix)
-            {
-                Environment.SetEnvironmentVariable("FNA3D_FORCE_DRIVER", "OpenGL");
-            }
-            */
-
-            if (string.IsNullOrWhiteSpace(Settings.GlobalSettings.UltimaOnlineDirectory))
-                Settings.GlobalSettings.UltimaOnlineDirectory = CUOEnviroment.ExecutablePath;
-
 
             const uint INVALID_UO_DIRECTORY = 0x100;
             const uint INVALID_UO_VERSION = 0x200;
@@ -182,8 +178,12 @@ namespace ClassicUO
 
 
             if (!Directory.Exists(Settings.GlobalSettings.UltimaOnlineDirectory) || !File.Exists(UOFileManager.GetUOFilePath("tiledata.mul")))
-                flags |= INVALID_UO_DIRECTORY;
-
+            {
+                // Try to force the path
+                Settings.GlobalSettings.UltimaOnlineDirectory = Path.GetFullPath(Path.Combine(CUOEnviroment.ExecutablePath, @"..\"));
+                if (!Directory.Exists(Settings.GlobalSettings.UltimaOnlineDirectory) || !File.Exists(UOFileManager.GetUOFilePath("tiledata.mul")))
+                    flags |= INVALID_UO_DIRECTORY;
+            }
 
             string clientVersionText = Settings.GlobalSettings.ClientVersion;
 
@@ -213,18 +213,12 @@ namespace ClassicUO
             {
                 if ((flags & INVALID_UO_DIRECTORY) != 0)
                 {
-                    Client.ShowErrorMessage("Your Ultima Online directory seems to be invalid.\nDownload the official Launcher to setup and run your game.\n\nLink: classicuo.eu");
+                    Client.ShowErrorMessage("Your Ultima Online directory seems to be invalid.\nDownload the official Launcher to setup and run your game.\n");
                 }
                 else if ((flags & INVALID_UO_VERSION) != 0)
                 {
-                    Client.ShowErrorMessage("Your Ultima Online client version seems to be invalid.\nDownload the official Launcher to setup and run your game.\n\nLink: classicuo.eu");
+                    Client.ShowErrorMessage("Your Ultima Online client version seems to be invalid.\nDownload the official Launcher to setup and run your game.\n");
                 }
-
-                try
-                {
-                    Process.Start("https://classicuo.eu");
-                }
-                catch { }
             }
             else
             {
@@ -240,9 +234,18 @@ namespace ClassicUO
                         break;
                 }
 
-                Client.Run();
+                try
+                {
+                    Client.Run();
+                }
+                catch (InvalidOperationException)
+                {
+                    /* Force OpenGL and try again */
+                    Environment.SetEnvironmentVariable("FNA3D_FORCE_DRIVER", "OpenGL");
+                    Client.Run();
+                }
             }
-            
+
 
             Log.Trace("Closing...");
         }
